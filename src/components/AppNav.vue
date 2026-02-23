@@ -24,9 +24,17 @@ async function onSignOut() {
   try {
     await auth.signOut()
     toast.success('Signed out successfully')
-    await router.push('/')
+    await router.push('/browse')
   } catch (error) {
     toast.error(error instanceof Error ? error.message : 'Failed to sign out')
+  }
+}
+
+async function onSignIn() {
+  try {
+    await auth.signInWithGoogle()
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : 'Could not start Google sign-in')
   }
 }
 </script>
@@ -56,6 +64,12 @@ async function onSignOut() {
         <span class="user-name">{{ displayName }}</span>
         <button type="button" class="link-button" @click="onSignOut" aria-label="Sign out">
           Sign Out
+        </button>
+      </div>
+
+      <div class="user-menu" v-else>
+        <button type="button" class="primary" @click="onSignIn" aria-label="Sign in with Google">
+          Sign in with Google
         </button>
       </div>
     </div>

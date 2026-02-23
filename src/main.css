@@ -448,6 +448,11 @@ a:focus-visible {
   padding: 1rem;
 }
 
+.login-modal p {
+  margin: 0.5rem 0 1rem;
+  color: var(--ink-soft);
+}
+
 @keyframes pulse {
   0% {
     background-position: 100% 0;

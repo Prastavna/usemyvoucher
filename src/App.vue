@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import AppNav from '@/components/AppNav.vue'
+import LoginPromptModal from '@/components/LoginPromptModal.vue'
 import ToastHost from '@/components/ToastHost.vue'
 import { useAuth } from '@/composables/useAuth'
 
@@ -14,10 +15,11 @@ onMounted(async () => {
 <template>
   <UApp>
     <div class="app-shell">
-      <AppNav v-if="auth.isAuthenticated.value" />
+      <AppNav />
       <main class="app-main">
         <RouterView />
       </main>
+      <LoginPromptModal />
       <ToastHost />
     </div>
   </UApp>

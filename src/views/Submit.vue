@@ -2,11 +2,13 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { useLoginPrompt } from '@/composables/useLoginPrompt'
 import { useToast } from '@/composables/useToast'
 import supabase from '@/lib/supabase'
 
 const router = useRouter()
 const auth = useAuth()
+const prompt = useLoginPrompt()
 const toast = useToast()
 
 const loading = ref(false)
@@ -39,7 +41,7 @@ function validateForm() {
 
 async function submitVoucher() {
   if (!auth.user.value) {
-    toast.error('Please sign in first')
+    prompt.openLoginPrompt('Sign in to submit a voucher.')
     return
   }
 

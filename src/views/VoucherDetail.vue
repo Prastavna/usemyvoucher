@@ -3,12 +3,14 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ReportModal from '@/components/ReportModal.vue'
 import { useAuth } from '@/composables/useAuth'
+import { useLoginPrompt } from '@/composables/useLoginPrompt'
 import { useToast } from '@/composables/useToast'
 import supabase from '@/lib/supabase'
 import type { Tables } from '@/types/supabase-generated'
 
 const route = useRoute()
 const auth = useAuth()
+const prompt = useLoginPrompt()
 const toast = useToast()
 
 const loading = ref(true)
@@ -67,11 +69,12 @@ async function revealCode() {
     return
   }
 
-  reveal.value = true
-
   if (!auth.user.value) {
+    prompt.openLoginPrompt('Sign in to reveal and copy voucher codes.')
     return
   }
+
+  reveal.value = true
 
   await supabase.from('voucher_views').insert({
     voucher_id: voucher.value.id,
@@ -93,7 +96,12 @@ async function copyCode() {
 }
 
 async function markUsed() {
-  if (!voucher.value || !auth.user.value || disableUseButton.value) {
+  if (!voucher.value || disableUseButton.value) {
+    return
+  }
+
+  if (!auth.user.value) {
+    prompt.openLoginPrompt('Sign in to mark voucher usage and earn points.')
     return
   }
 
@@ -116,6 +124,15 @@ async function markUsed() {
   hasUsed.value = true
   voucher.value.use_count = (voucher.value.use_count || 0) + 1
   toast.success('Marked as used. Thanks for contributing usage data.')
+}
+
+function openReportModal() {
+  if (!auth.user.value) {
+    prompt.openLoginPrompt('Sign in to report voucher issues.')
+    return
+  }
+
+  reportOpen.value = true
 }
 
 onMounted(loadVoucher)
@@ -149,7 +166,7 @@ onMounted(loadVoucher)
         <button type="button" class="primary" @click="markUsed" :disabled="disableUseButton">
           {{ hasUsed ? 'Already used' : usageLimitReached ? 'Usage limit reached' : 'I used this code' }}
         </button>
-        <button type="button" class="secondary" @click="reportOpen = true">Report issue</button>
+        <button type="button" class="secondary" @click="openReportModal">Report issue</button>
       </div>
     </article>
 
