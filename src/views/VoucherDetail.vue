@@ -122,7 +122,7 @@ async function markUsed() {
   }
 
   hasUsed.value = true
-  voucher.value.use_count = (voucher.value.use_count || 0) + 1
+  await loadVoucher()
   toast.success('Marked as used. Thanks for contributing usage data.')
 }
 

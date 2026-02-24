@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
 import VoucherCard from '@/components/VoucherCard.vue'
 import supabase from '@/lib/supabase'
 import type { Tables } from '@/types/supabase-generated'
 
 const router = useRouter()
+const auth = useAuth()
 
 const loading = ref(true)
 const errorMessage = ref('')
@@ -70,14 +72,34 @@ async function loadVouchers() {
     .eq('is_active', true)
     .is('deleted_at', null)
 
-  loading.value = false
-
   if (error) {
+    loading.value = false
     errorMessage.value = error.message
     return
   }
 
-  vouchers.value = data
+  let visibleVouchers = data.filter((voucher) => {
+    return (voucher.use_count || 0) < (voucher.max_uses || 1)
+  })
+
+  if (auth.user.value) {
+    const { data: usageData, error: usageError } = await supabase
+      .from('voucher_uses')
+      .select('voucher_id')
+      .eq('user_id', auth.user.value.id)
+
+    if (usageError) {
+      loading.value = false
+      errorMessage.value = usageError.message
+      return
+    }
+
+    const usedVoucherIds = new Set(usageData.map((usage) => usage.voucher_id))
+    visibleVouchers = visibleVouchers.filter((voucher) => !usedVoucherIds.has(voucher.id))
+  }
+
+  vouchers.value = visibleVouchers
+  loading.value = false
 }
 
 function openVoucher(id: string) {
@@ -85,6 +107,13 @@ function openVoucher(id: string) {
 }
 
 onMounted(loadVouchers)
+
+watch(
+  () => auth.user.value?.id,
+  () => {
+    loadVouchers()
+  }
+)
 </script>
 
 <template>
