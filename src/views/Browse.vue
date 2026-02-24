@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import VoucherCard from '@/components/VoucherCard.vue'
+import { DEFAULT_VOUCHER_CATEGORIES } from '@/constants/categories'
 import supabase from '@/lib/supabase'
 import type { Tables } from '@/types/supabase-generated'
 
@@ -18,7 +19,7 @@ const category = ref('all')
 const sortBy = ref<'newest' | 'most_used' | 'expiring_soon'>('newest')
 
 const categoryOptions = computed(() => {
-  const values = new Set<string>()
+  const values = new Set<string>(DEFAULT_VOUCHER_CATEGORIES)
   for (const voucher of vouchers.value) {
     if (voucher.category) {
       values.add(voucher.category)

@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { DEFAULT_VOUCHER_CATEGORIES } from '@/constants/categories'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
 import { useToast } from '@/composables/useToast'
 import supabase from '@/lib/supabase'
@@ -124,7 +125,12 @@ async function submitVoucher() {
 
       <label class="field">
         <span>Category</span>
-        <input v-model="form.category" maxlength="80" placeholder="Food, Fashion, Travel..." aria-label="Category" />
+        <select v-model="form.category" aria-label="Category">
+          <option value="">Select category</option>
+          <option v-for="value in DEFAULT_VOUCHER_CATEGORIES" :key="value" :value="value">
+            {{ value }}
+          </option>
+        </select>
       </label>
 
       <label class="field">
