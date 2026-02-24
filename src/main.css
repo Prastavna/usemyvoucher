@@ -11,7 +11,8 @@
   --accent-2: #c67d1b;
   --danger: #9f1239;
   --border: #dccdb8;
-  --radius: 16px;
+  --border-strong: #967f63;
+  --radius: 6px;
 }
 
 * {
@@ -69,7 +70,6 @@ select {
   top: 0;
   z-index: 20;
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(8px);
   background: #fffbf2cc;
 }
 
@@ -97,14 +97,14 @@ select {
   height: 2rem;
   background: linear-gradient(135deg, var(--accent), #16a34a);
   color: #fff;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 0.8rem;
 }
 
 .mobile-toggle {
   display: none;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
   background: var(--surface);
   padding: 0.3rem 0.65rem;
 }
@@ -117,12 +117,15 @@ select {
 
 .nav-links a {
   padding: 0.4rem 0.6rem;
-  border-radius: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .nav-links a.router-link-active {
   background: #dff5f3;
   color: #0b5f59;
+  border-color: #b0ddd8;
 }
 
 .user-menu {
@@ -162,9 +165,8 @@ select {
   max-width: 760px;
   background: linear-gradient(150deg, #fffefa, #fff5e6);
   border: 1px solid var(--border);
-  border-radius: 28px;
+  border-radius: var(--radius);
   padding: clamp(1.5rem, 4vw, 3rem);
-  box-shadow: 0 20px 45px #7f6b4e14;
 }
 
 .eyebrow {
@@ -192,7 +194,7 @@ textarea,
 select {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 6px;
   padding: 0.65rem 0.75rem;
   background: var(--surface);
 }
@@ -217,7 +219,7 @@ a:focus-visible {
 .my-voucher-card,
 .detail-card,
 .profile-card {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   background: var(--surface);
   padding: 1rem;
@@ -225,11 +227,11 @@ a:focus-visible {
 
 .voucher-card {
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: border-color 0.15s ease;
 }
 
 .voucher-card:hover {
-  transform: translateY(-2px);
+  border-color: #000;
 }
 
 .voucher-card h3,
@@ -257,8 +259,8 @@ a:focus-visible {
 
 .code-box {
   margin: 1rem 0;
-  border: 1px dashed var(--border);
-  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
   padding: 1rem;
 }
 
@@ -279,7 +281,7 @@ a:focus-visible {
 .secondary,
 .danger,
 .primary-link {
-  border-radius: 12px;
+  border-radius: 6px;
   border: 1px solid transparent;
   padding: 0.55rem 0.8rem;
   cursor: pointer;
@@ -292,6 +294,7 @@ a:focus-visible {
 .primary-link {
   background: var(--accent);
   color: #fff;
+  border-color: var(--border-strong);
 }
 
 .secondary {
@@ -308,7 +311,7 @@ a:focus-visible {
 
 .empty-state {
   padding: 2rem;
-  border: 1px dashed var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   text-align: center;
   background: #fffdf8;
@@ -318,7 +321,7 @@ a:focus-visible {
   border: 1px solid #ffc9c9;
   background: #fff2f2;
   color: #8f1d1d;
-  border-radius: 12px;
+  border-radius: 6px;
   padding: 0.7rem;
 }
 
@@ -344,7 +347,7 @@ a:focus-visible {
   width: 100%;
   border-collapse: collapse;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   overflow: hidden;
 }
@@ -384,6 +387,7 @@ a:focus-visible {
   background: linear-gradient(90deg, #f4efe6, #ede3d2, #f4efe6);
   background-size: 300% 100%;
   animation: pulse 1.2s infinite;
+  border: 1px solid var(--border);
 }
 
 .toast-host {
@@ -402,7 +406,7 @@ a:focus-visible {
   gap: 0.8rem;
   align-items: center;
   padding: 0.7rem 0.8rem;
-  border-radius: 12px;
+  border-radius: 6px;
   color: #122;
   background: #eff8ff;
   border: 1px solid #bdd9ef;
@@ -443,8 +447,8 @@ a:focus-visible {
 .modal-panel {
   width: min(100%, 460px);
   background: var(--surface);
-  border-radius: 18px;
-  border: 1px solid var(--border);
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
   padding: 1rem;
 }
 
