@@ -16,12 +16,31 @@ async function ensureProfile(user: User) {
     return
   }
 
-  await supabase.from('profiles').upsert({
-    id: user.id,
-    email: user.email,
-    display_name: user.user_metadata.full_name ?? user.user_metadata.name ?? null,
-    avatar_url: user.user_metadata.avatar_url ?? null
-  })
+  const { error } = await supabase
+    .from('profiles')
+    .upsert(
+      {
+        id: user.id,
+        email: user.email,
+        display_name: user.user_metadata.full_name ?? user.user_metadata.name ?? null,
+        avatar_url: user.user_metadata.avatar_url ?? user.user_metadata.picture ?? null
+      },
+      {
+        onConflict: 'id'
+      }
+    )
+
+  if (error) {
+    throw error
+  }
+}
+
+async function syncProfile() {
+  if (!state.user) {
+    return
+  }
+
+  await ensureProfile(state.user)
 }
 
 async function fetchUser() {
@@ -90,6 +109,7 @@ export function useAuth() {
     loading: computed(() => state.loading),
     isAuthenticated: computed(() => Boolean(state.user)),
     initializeAuth,
+    syncProfile,
     fetchUser,
     signInWithGoogle,
     signOut

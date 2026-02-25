@@ -28,7 +28,7 @@ async function onSignOut() {
   try {
     await auth.signOut()
     toast.success('Signed out successfully')
-    await router.push('/browse')
+    await router.push('/')
   } catch (error) {
     toast.error(error instanceof Error ? error.message : 'Failed to sign out')
   }
@@ -46,7 +46,7 @@ async function onSignIn() {
 <template>
   <header class="sticky top-0 z-20 border-b border-stone-300/80 bg-amber-50/85 backdrop-blur">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
-      <RouterLink to="/browse" class="inline-flex items-center gap-2 font-bold text-stone-900" aria-label="Go to browse page">
+      <RouterLink to="/" class="inline-flex items-center gap-2 font-bold text-stone-900" aria-label="Go to browse page">
         <span
           class="inline-grid w-6 place-items-center rounded-md text-xs font-semibold text-white"
         >
@@ -69,7 +69,7 @@ async function onSignIn() {
         :class="{ hidden: !menuOpen, flex: menuOpen }"
         aria-label="Main navigation"
       >
-        <RouterLink to="/browse" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">Browse</RouterLink>
+        <RouterLink to="/" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">Browse</RouterLink>
         <RouterLink to="/submit" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">Submit</RouterLink>
         <RouterLink to="/my-vouchers" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">My Vouchers</RouterLink>
         <RouterLink to="/leaderboard" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">Leaderboard</RouterLink>
