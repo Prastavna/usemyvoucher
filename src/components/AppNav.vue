@@ -48,11 +48,11 @@ async function onSignIn() {
     <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
       <RouterLink to="/browse" class="inline-flex items-center gap-2 font-bold text-stone-900" aria-label="Go to browse page">
         <span
-          class="inline-grid size-8 place-items-center rounded-md bg-gradient-to-br from-teal-700 to-emerald-600 text-xs font-semibold text-white"
+          class="inline-grid w-6 place-items-center rounded-md text-xs font-semibold text-white"
         >
-          UMV
+          <img src="../assets/usemyvoucher.svg" alt="Use My Voucher Logo" />
         </span>
-        <span>UseMyVoucher</span>
+        <span class="text-emerald-600">Use My Voucher</span>
       </RouterLink>
 
       <button
