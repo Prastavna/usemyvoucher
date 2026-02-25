@@ -2,13 +2,19 @@
 import { computed, onMounted, ref } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import supabase from '@/lib/supabase'
-import type { Tables } from '@/types/supabase-generated'
+
+type LeaderboardUser = {
+  id: string
+  display_name: string | null
+  avatar_url: string | null
+  points: number | null
+}
 
 const auth = useAuth()
 
 const loading = ref(true)
 const errorMessage = ref('')
-const users = ref<Tables<'profiles'>[]>([])
+const users = ref<LeaderboardUser[]>([])
 
 const rankedUsers = computed(() => users.value.map((user, index) => ({ rank: index + 1, user })))
 
@@ -18,7 +24,7 @@ async function loadLeaderboard() {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, display_name, avatar_url, points')
     .order('points', { ascending: false, nullsFirst: false })
     .limit(100)
 
@@ -32,8 +38,8 @@ async function loadLeaderboard() {
   users.value = data
 }
 
-function displayName(user: Tables<'profiles'>) {
-  return user.display_name || user.email
+function displayName(user: LeaderboardUser) {
+  return user.display_name || 'Community member'
 }
 
 function isCurrentUser(id: string) {
