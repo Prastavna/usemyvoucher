@@ -18,6 +18,9 @@ const search = ref('')
 const category = ref('all')
 const sortBy = ref<'newest' | 'most_used' | 'expiring_soon'>('newest')
 
+const controlClass =
+  'w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200'
+
 const categoryOptions = computed(() => {
   const values = new Set<string>(DEFAULT_VOUCHER_CATEGORIES)
   for (const voucher of vouchers.value) {
@@ -118,39 +121,41 @@ watch(
 </script>
 
 <template>
-  <section class="page-shell">
-    <div class="page-head">
-      <h1>Browse vouchers</h1>
-      <p>Find active coupon codes shared by the community.</p>
+  <section class="mx-auto max-w-6xl space-y-4">
+    <div class="space-y-1">
+      <h1 class="text-3xl font-bold tracking-tight text-stone-900">Browse vouchers</h1>
+      <p class="text-stone-600">Find active coupon codes shared by the community.</p>
     </div>
 
-    <div class="toolbar">
-      <input v-model="search" type="search" placeholder="Search by merchant" aria-label="Search vouchers" />
-      <select v-model="category" aria-label="Filter by category">
+    <div class="grid gap-2 md:grid-cols-[2fr_1fr_1fr]">
+      <input v-model="search" :class="controlClass" type="search" placeholder="Search by merchant" aria-label="Search vouchers" />
+      <select v-model="category" :class="controlClass" aria-label="Filter by category">
         <option v-for="value in categoryOptions" :key="value" :value="value">
           {{ value === 'all' ? 'All categories' : value }}
         </option>
       </select>
-      <select v-model="sortBy" aria-label="Sort vouchers">
+      <select v-model="sortBy" :class="controlClass" aria-label="Sort vouchers">
         <option value="newest">Newest</option>
         <option value="most_used">Most used</option>
         <option value="expiring_soon">Expiring soon</option>
       </select>
     </div>
 
-    <p v-if="errorMessage" class="error-state">Failed to load vouchers: {{ errorMessage }}</p>
+    <p v-if="errorMessage" class="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+      Failed to load vouchers: {{ errorMessage }}
+    </p>
 
-    <div v-if="loading" class="voucher-grid" aria-label="Loading vouchers">
-      <div v-for="item in 6" :key="item" class="skeleton-card" />
+    <div v-if="loading" class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3" aria-label="Loading vouchers">
+      <div v-for="item in 6" :key="item" class="h-36 animate-pulse rounded-md border border-stone-300 bg-stone-100" />
     </div>
 
-    <div v-else-if="filteredVouchers.length" class="voucher-grid">
+    <div v-else-if="filteredVouchers.length" class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">
       <VoucherCard v-for="voucher in filteredVouchers" :key="voucher.id" :voucher="voucher" @open="openVoucher" />
     </div>
 
-    <div v-else class="empty-state">
-      <h2>No vouchers found</h2>
-      <p>Try another search term or category, or check back soon.</p>
+    <div v-else class="rounded-md border border-stone-400 bg-amber-50 px-6 py-10 text-center">
+      <h2 class="text-xl font-semibold text-stone-900">No vouchers found</h2>
+      <p class="mt-2 text-stone-600">Try another search term or category, or check back soon.</p>
     </div>
   </section>
 </template>

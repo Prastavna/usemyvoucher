@@ -17,6 +17,9 @@ const usesByOthers = ref(0)
 const displayNameDraft = ref('')
 const savingName = ref(false)
 
+const controlClass =
+  'w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200'
+
 const joinedDate = computed(() => {
   if (!profile.value?.created_at) {
     return 'Unknown'
@@ -94,43 +97,45 @@ onMounted(loadProfile)
 </script>
 
 <template>
-  <section class="page-shell narrow">
-    <div class="page-head">
-      <h1>Profile</h1>
-      <p>Your account details and contribution stats.</p>
+  <section class="mx-auto flex max-w-3xl flex-col gap-4">
+    <div class="space-y-1">
+      <h1 class="text-3xl font-bold tracking-tight text-stone-900">Profile</h1>
+      <p class="text-stone-600">Your account details and contribution stats.</p>
     </div>
 
-    <p v-if="loading">Loading profile...</p>
-    <p v-else-if="errorMessage" class="error-state">Failed to load profile: {{ errorMessage }}</p>
+    <p v-if="loading" class="text-stone-600">Loading profile...</p>
+    <p v-else-if="errorMessage" class="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+      Failed to load profile: {{ errorMessage }}
+    </p>
 
-    <article v-else-if="profile" class="profile-card">
-      <img v-if="profile.avatar_url" :src="profile.avatar_url" alt="Profile avatar" class="profile-avatar" />
+    <article v-else-if="profile" class="space-y-3 rounded-md border border-stone-500 bg-white p-4 shadow-sm">
+      <img v-if="profile.avatar_url" :src="profile.avatar_url" alt="Profile avatar" class="size-16 rounded-full object-cover" />
       <p><strong>Email:</strong> {{ profile.email }}</p>
       <p><strong>Points:</strong> {{ profile.points || 0 }}</p>
       <p><strong>Joined:</strong> {{ joinedDate }}</p>
 
-      <div class="stats-grid">
+      <div class="grid gap-2 sm:grid-cols-3">
         <div>
-          <p class="stat-label">Vouchers submitted</p>
-          <p class="stat-value">{{ vouchersSubmitted }}</p>
+          <p class="text-sm text-stone-500">Vouchers submitted</p>
+          <p class="text-xl font-bold text-stone-900">{{ vouchersSubmitted }}</p>
         </div>
         <div>
-          <p class="stat-label">Vouchers used</p>
-          <p class="stat-value">{{ vouchersUsed }}</p>
+          <p class="text-sm text-stone-500">Vouchers used</p>
+          <p class="text-xl font-bold text-stone-900">{{ vouchersUsed }}</p>
         </div>
         <div>
-          <p class="stat-label">Used by others</p>
-          <p class="stat-value">{{ usesByOthers }}</p>
+          <p class="text-sm text-stone-500">Used by others</p>
+          <p class="text-xl font-bold text-stone-900">{{ usesByOthers }}</p>
         </div>
       </div>
 
-      <label class="field">
-        <span>Edit display name</span>
-        <input v-model="displayNameDraft" maxlength="120" aria-label="Edit display name" />
+      <label class="grid gap-1.5">
+        <span class="text-sm font-medium text-stone-700">Edit display name</span>
+        <input v-model="displayNameDraft" :class="controlClass" maxlength="120" aria-label="Edit display name" />
       </label>
-      <button type="button" class="primary" @click="saveDisplayName" :disabled="savingName">
+      <UButton type="button" color="primary" :loading="savingName" :disabled="savingName" class="w-fit" @click="saveDisplayName">
         {{ savingName ? 'Saving...' : 'Save display name' }}
-      </button>
+      </UButton>
     </article>
   </section>
 </template>

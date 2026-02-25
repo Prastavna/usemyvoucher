@@ -20,6 +20,10 @@ const displayName = computed(() => {
 
 const avatarUrl = computed(() => auth.user.value?.user_metadata.avatar_url as string | undefined)
 
+const navLinkClass =
+  'rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-teal-500 hover:text-teal-700'
+const navLinkActiveClass = '!border-teal-300 !bg-teal-50 !text-teal-800'
+
 async function onSignOut() {
   try {
     await auth.signOut()
@@ -40,37 +44,46 @@ async function onSignIn() {
 </script>
 
 <template>
-  <header class="site-nav">
-    <div class="site-nav-inner">
-      <RouterLink to="/browse" class="brand" aria-label="Go to browse page">
-        <span class="brand-mark">UMV</span>
-        <span class="brand-name">UseMyVoucher</span>
+  <header class="sticky top-0 z-20 border-b border-stone-300/80 bg-amber-50/85 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
+      <RouterLink to="/browse" class="inline-flex items-center gap-2 font-bold text-stone-900" aria-label="Go to browse page">
+        <span
+          class="inline-grid size-8 place-items-center rounded-md bg-gradient-to-br from-teal-700 to-emerald-600 text-xs font-semibold text-white"
+        >
+          UMV
+        </span>
+        <span>UseMyVoucher</span>
       </RouterLink>
 
-      <button type="button" class="mobile-toggle" aria-label="Toggle navigation" @click="menuOpen = !menuOpen">
+      <button
+        type="button"
+        class="ml-auto inline-flex rounded-md border border-stone-400 bg-white px-3 py-1 text-lg md:hidden"
+        aria-label="Toggle navigation"
+        @click="menuOpen = !menuOpen"
+      >
         ☰
       </button>
 
-      <nav class="nav-links" :class="{ open: menuOpen }" aria-label="Main navigation">
-        <RouterLink to="/browse" @click="menuOpen = false">Browse</RouterLink>
-        <RouterLink to="/submit" @click="menuOpen = false">Submit</RouterLink>
-        <RouterLink to="/my-vouchers" @click="menuOpen = false">My Vouchers</RouterLink>
-        <RouterLink to="/leaderboard" @click="menuOpen = false">Leaderboard</RouterLink>
-        <RouterLink to="/profile" @click="menuOpen = false">Profile</RouterLink>
+      <nav
+        class="w-full flex-wrap items-center gap-2 md:flex md:w-auto md:flex-1 md:justify-center"
+        :class="{ hidden: !menuOpen, flex: menuOpen }"
+        aria-label="Main navigation"
+      >
+        <RouterLink to="/browse" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">Browse</RouterLink>
+        <RouterLink to="/submit" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">Submit</RouterLink>
+        <RouterLink to="/my-vouchers" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">My Vouchers</RouterLink>
+        <RouterLink to="/leaderboard" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">Leaderboard</RouterLink>
+        <RouterLink to="/profile" :class="navLinkClass" :active-class="navLinkActiveClass" @click="menuOpen = false">Profile</RouterLink>
       </nav>
 
-      <div class="user-menu" v-if="auth.user.value">
-        <img v-if="avatarUrl" :src="avatarUrl" alt="User avatar" class="avatar" />
-        <span class="user-name">{{ displayName }}</span>
-        <button type="button" class="link-button" @click="onSignOut" aria-label="Sign out">
-          Sign Out
-        </button>
+      <div class="ml-auto flex w-full items-center gap-2 md:w-auto" v-if="auth.user.value">
+        <img v-if="avatarUrl" :src="avatarUrl" alt="User avatar" class="size-8 rounded-full object-cover" />
+        <span class="truncate text-sm font-medium text-stone-700">{{ displayName }}</span>
+        <UButton color="neutral" variant="ghost" size="sm" @click="onSignOut" aria-label="Sign out">Sign Out</UButton>
       </div>
 
-      <div class="user-menu" v-else>
-        <button type="button" class="primary" @click="onSignIn" aria-label="Sign in with Google">
-          Sign in with Google
-        </button>
+      <div class="ml-auto w-full md:w-auto" v-else>
+        <UButton color="primary" size="sm" @click="onSignIn" aria-label="Sign in with Google">Sign in with Google</UButton>
       </div>
     </div>
   </header>

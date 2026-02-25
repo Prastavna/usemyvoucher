@@ -12,6 +12,13 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    ui()
+    ui({
+      ui: {
+        colors: {
+          primary: 'teal',
+          neutral: 'stone'
+        }
+      }
+    })
   ],
 })

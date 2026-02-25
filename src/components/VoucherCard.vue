@@ -20,13 +20,19 @@ const expiryText = computed(() => {
 </script>
 
 <template>
-  <article class="voucher-card" tabindex="0" role="button" @click="emit('open', voucher.id)" @keyup.enter="emit('open', voucher.id)">
-    <div class="voucher-card-top">
-      <h3>{{ voucher.merchant_name }}</h3>
-      <p class="discount">{{ voucher.discount_value || 'Offer available' }}</p>
+  <article
+    class="cursor-pointer space-y-1 rounded-md border border-stone-500 bg-white p-4 shadow-sm transition hover:border-stone-700"
+    tabindex="0"
+    role="button"
+    @click="emit('open', voucher.id)"
+    @keyup.enter="emit('open', voucher.id)"
+  >
+    <div>
+      <h3 class="text-lg font-semibold text-stone-900">{{ voucher.merchant_name }}</h3>
+      <p class="mt-1 text-sm font-semibold text-teal-700">{{ voucher.discount_value || 'Offer available' }}</p>
     </div>
-    <p class="meta">Category: {{ voucher.category || 'General' }}</p>
-    <p class="meta">Expiry: {{ expiryText }}</p>
-    <p class="meta">Uses: {{ voucher.use_count || 0 }} / {{ voucher.max_uses || 1 }}</p>
+    <p class="text-sm text-stone-600">Category: {{ voucher.category || 'General' }}</p>
+    <p class="text-sm text-stone-600">Expiry: {{ expiryText }}</p>
+    <p class="text-sm text-stone-600">Uses: {{ voucher.use_count || 0 }} / {{ voucher.max_uses || 1 }}</p>
   </article>
 </template>

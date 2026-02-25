@@ -139,34 +139,36 @@ onMounted(loadVoucher)
 </script>
 
 <template>
-  <section class="page-shell">
-    <p v-if="loading">Loading voucher...</p>
-    <p v-else-if="errorMessage" class="error-state">Failed to load voucher: {{ errorMessage }}</p>
+  <section class="mx-auto max-w-6xl">
+    <p v-if="loading" class="text-stone-600">Loading voucher...</p>
+    <p v-else-if="errorMessage" class="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+      Failed to load voucher: {{ errorMessage }}
+    </p>
 
-    <article v-else-if="voucher" class="detail-card">
-      <h1>{{ voucher.merchant_name }}</h1>
-      <p>{{ voucher.description || 'No description provided.' }}</p>
+    <article v-else-if="voucher" class="space-y-4 rounded-md border border-stone-500 bg-white p-4 shadow-sm">
+      <h1 class="text-3xl font-bold tracking-tight text-stone-900">{{ voucher.merchant_name }}</h1>
+      <p class="text-stone-600">{{ voucher.description || 'No description provided.' }}</p>
 
-      <div class="detail-grid">
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <p><strong>Discount:</strong> {{ voucher.discount_value || 'N/A' }}</p>
         <p><strong>Category:</strong> {{ voucher.category || 'General' }}</p>
         <p><strong>Expiry:</strong> {{ voucher.expiry_date ? new Date(voucher.expiry_date).toLocaleDateString() : 'No expiry' }}</p>
         <p><strong>Uses:</strong> {{ voucher.use_count || 0 }} / {{ voucher.max_uses || 1 }}</p>
       </div>
 
-      <div class="code-box">
-        <p class="code-value">{{ reveal ? voucher.voucher_code : '••••••••••' }}</p>
-        <div class="actions">
-          <button type="button" class="primary" @click="revealCode" :disabled="reveal">Reveal code</button>
-          <button type="button" class="secondary" @click="copyCode" :disabled="!reveal">Copy code</button>
+      <div class="space-y-3 rounded-md border border-stone-500 p-4">
+        <p class="font-mono text-2xl font-bold tracking-[0.1em] text-stone-900">{{ reveal ? voucher.voucher_code : '••••••••••' }}</p>
+        <div class="flex flex-wrap gap-2">
+          <UButton type="button" color="primary" @click="revealCode" :disabled="reveal">Reveal code</UButton>
+          <UButton type="button" color="neutral" variant="soft" @click="copyCode" :disabled="!reveal">Copy code</UButton>
         </div>
       </div>
 
-      <div class="actions">
-        <button type="button" class="primary" @click="markUsed" :disabled="disableUseButton">
+      <div class="flex flex-wrap gap-2">
+        <UButton type="button" color="primary" @click="markUsed" :disabled="disableUseButton">
           {{ hasUsed ? 'Already used' : usageLimitReached ? 'Usage limit reached' : 'I used this code' }}
-        </button>
-        <button type="button" class="secondary" @click="openReportModal">Report issue</button>
+        </UButton>
+        <UButton type="button" color="neutral" variant="soft" @click="openReportModal">Report issue</UButton>
       </div>
     </article>
 

@@ -14,6 +14,9 @@ const toast = useToast()
 
 const loading = ref(false)
 
+const controlClass =
+  'w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200'
+
 const form = reactive({
   merchant_name: '',
   voucher_code: '',
@@ -91,41 +94,47 @@ async function submitVoucher() {
 </script>
 
 <template>
-  <section class="page-shell narrow">
-    <div class="page-head">
-      <h1>Submit a voucher</h1>
-      <p>Share unused codes so someone else can benefit.</p>
+  <section class="mx-auto flex max-w-3xl flex-col gap-4">
+    <div class="space-y-1">
+      <h1 class="text-3xl font-bold tracking-tight text-stone-900">Submit a voucher</h1>
+      <p class="text-stone-600">Share unused codes so someone else can benefit.</p>
     </div>
 
-    <form class="form-grid" @submit.prevent="submitVoucher">
-      <label class="field">
-        <span>Merchant name *</span>
-        <input v-model="form.merchant_name" maxlength="120" required aria-label="Merchant name" />
+    <form class="grid gap-3" @submit.prevent="submitVoucher">
+      <label class="grid gap-1.5">
+        <span class="text-sm font-medium text-stone-700">Merchant name *</span>
+        <input v-model="form.merchant_name" :class="controlClass" maxlength="120" required aria-label="Merchant name" />
       </label>
 
-      <label class="field">
-        <span>Voucher code *</span>
-        <input v-model="form.voucher_code" maxlength="120" required aria-label="Voucher code" />
+      <label class="grid gap-1.5">
+        <span class="text-sm font-medium text-stone-700">Voucher code *</span>
+        <input v-model="form.voucher_code" :class="controlClass" maxlength="120" required aria-label="Voucher code" />
       </label>
 
-      <label class="field">
-        <span>Description</span>
-        <textarea v-model="form.description" rows="3" maxlength="500" aria-label="Description" />
+      <label class="grid gap-1.5">
+        <span class="text-sm font-medium text-stone-700">Description</span>
+        <textarea v-model="form.description" :class="controlClass" rows="3" maxlength="500" aria-label="Description" />
       </label>
 
-      <label class="field">
-        <span>Discount value</span>
-        <input v-model="form.discount_value" maxlength="80" placeholder="e.g. 20% OFF" aria-label="Discount value" />
+      <label class="grid gap-1.5">
+        <span class="text-sm font-medium text-stone-700">Discount value</span>
+        <input
+          v-model="form.discount_value"
+          :class="controlClass"
+          maxlength="80"
+          placeholder="e.g. 20% OFF"
+          aria-label="Discount value"
+        />
       </label>
 
-      <label class="field">
-        <span>Expiry date</span>
-        <input v-model="form.expiry_date" type="date" aria-label="Expiry date" />
+      <label class="grid gap-1.5">
+        <span class="text-sm font-medium text-stone-700">Expiry date</span>
+        <input v-model="form.expiry_date" :class="controlClass" type="date" aria-label="Expiry date" />
       </label>
 
-      <label class="field">
-        <span>Category</span>
-        <select v-model="form.category" aria-label="Category">
+      <label class="grid gap-1.5">
+        <span class="text-sm font-medium text-stone-700">Category</span>
+        <select v-model="form.category" :class="controlClass" aria-label="Category">
           <option value="">Select category</option>
           <option v-for="value in DEFAULT_VOUCHER_CATEGORIES" :key="value" :value="value">
             {{ value }}
@@ -133,14 +142,14 @@ async function submitVoucher() {
         </select>
       </label>
 
-      <label class="field">
-        <span>Max uses</span>
-        <input v-model.number="form.max_uses" type="number" min="1" aria-label="Maximum uses" />
+      <label class="grid gap-1.5">
+        <span class="text-sm font-medium text-stone-700">Max uses</span>
+        <input v-model.number="form.max_uses" :class="controlClass" type="number" min="1" aria-label="Maximum uses" />
       </label>
 
-      <button type="submit" class="primary" :disabled="loading" aria-label="Submit voucher form">
+      <UButton type="submit" color="primary" :loading="loading" :disabled="loading" class="w-fit" aria-label="Submit voucher form">
         {{ loading ? 'Submitting...' : 'Submit voucher' }}
-      </button>
+      </UButton>
     </form>
   </section>
 </template>

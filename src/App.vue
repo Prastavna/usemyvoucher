@@ -14,9 +14,9 @@ onMounted(async () => {
 
 <template>
   <UApp>
-    <div class="app-shell">
+    <div class="min-h-screen">
       <AppNav />
-      <main class="app-main">
+      <main class="px-4 py-4">
         <RouterView />
       </main>
       <LoginPromptModal />

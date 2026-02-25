@@ -44,32 +44,40 @@ onMounted(loadLeaderboard)
 </script>
 
 <template>
-  <section class="page-shell">
-    <div class="page-head">
-      <h1>Leaderboard</h1>
-      <p>Top contributors ranked by points.</p>
+  <section class="mx-auto max-w-6xl space-y-4">
+    <div class="space-y-1">
+      <h1 class="text-3xl font-bold tracking-tight text-stone-900">Leaderboard</h1>
+      <p class="text-stone-600">Top contributors ranked by points.</p>
     </div>
 
-    <p v-if="loading">Loading leaderboard...</p>
-    <p v-else-if="errorMessage" class="error-state">Failed to load leaderboard: {{ errorMessage }}</p>
+    <p v-if="loading" class="text-stone-600">Loading leaderboard...</p>
+    <p v-else-if="errorMessage" class="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+      Failed to load leaderboard: {{ errorMessage }}
+    </p>
 
-    <div v-else class="leaderboard-table-wrap">
-      <table class="leaderboard-table">
+    <div v-else class="overflow-x-auto">
+      <table class="w-full overflow-hidden rounded-md border border-stone-500 bg-white">
         <thead>
           <tr>
-            <th>Rank</th>
-            <th>User</th>
-            <th>Points</th>
+            <th class="border-b border-stone-200 px-3 py-2 text-left text-sm font-semibold text-stone-700">Rank</th>
+            <th class="border-b border-stone-200 px-3 py-2 text-left text-sm font-semibold text-stone-700">User</th>
+            <th class="border-b border-stone-200 px-3 py-2 text-left text-sm font-semibold text-stone-700">Points</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="entry in rankedUsers" :key="entry.user.id" :class="{ highlight: isCurrentUser(entry.user.id) }">
-            <td>#{{ entry.rank }}</td>
-            <td class="user-cell">
-              <img v-if="entry.user.avatar_url" :src="entry.user.avatar_url" alt="Avatar" class="avatar" />
-              <span>{{ displayName(entry.user) }}</span>
+          <tr
+            v-for="entry in rankedUsers"
+            :key="entry.user.id"
+            :class="{ 'bg-teal-50': isCurrentUser(entry.user.id) }"
+          >
+            <td class="border-b border-stone-200 px-3 py-2 text-sm text-stone-700">#{{ entry.rank }}</td>
+            <td class="border-b border-stone-200 px-3 py-2 text-sm text-stone-700">
+              <div class="flex items-center gap-2">
+                <img v-if="entry.user.avatar_url" :src="entry.user.avatar_url" alt="Avatar" class="size-8 rounded-full object-cover" />
+                <span>{{ displayName(entry.user) }}</span>
+              </div>
             </td>
-            <td>{{ entry.user.points || 0 }}</td>
+            <td class="border-b border-stone-200 px-3 py-2 text-sm font-semibold text-stone-900">{{ entry.user.points || 0 }}</td>
           </tr>
         </tbody>
       </table>

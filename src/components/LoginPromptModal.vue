@@ -21,18 +21,18 @@ async function startGoogleSignIn() {
 <template>
   <div
     v-if="prompt.open.value"
-    class="modal-backdrop"
+    class="fixed inset-0 z-40 grid place-items-center bg-slate-900/45 p-4"
     role="dialog"
     aria-modal="true"
     aria-label="Sign in required dialog"
     @click.self="prompt.closeLoginPrompt"
   >
-    <div class="modal-panel login-modal">
-      <h3>Sign in required</h3>
-      <p>{{ prompt.message.value }}</p>
-      <div class="actions">
-        <button type="button" class="secondary" @click="prompt.closeLoginPrompt">Not now</button>
-        <button type="button" class="primary" @click="startGoogleSignIn">Sign in with Google</button>
+    <div class="w-full max-w-md space-y-3 rounded-lg border border-stone-500 bg-white p-4 shadow-lg">
+      <h3 class="text-lg font-semibold text-stone-900">Sign in required</h3>
+      <p class="text-stone-600">{{ prompt.message.value }}</p>
+      <div class="flex flex-wrap gap-2">
+        <UButton type="button" color="neutral" variant="soft" @click="prompt.closeLoginPrompt">Not now</UButton>
+        <UButton type="button" color="primary" @click="startGoogleSignIn">Sign in with Google</UButton>
       </div>
     </div>
   </div>
