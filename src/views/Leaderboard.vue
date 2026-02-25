@@ -22,11 +22,11 @@ async function loadLeaderboard() {
   loading.value = true
   errorMessage.value = ''
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, display_name, avatar_url, points')
-    .order('points', { ascending: false, nullsFirst: false })
-    .limit(100)
+  const { data, error } = await (supabase as typeof supabase & {
+    rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>
+  }).rpc('get_public_leaderboard', {
+    limit_count: 100
+  })
 
   loading.value = false
 
@@ -35,7 +35,7 @@ async function loadLeaderboard() {
     return
   }
 
-  users.value = data
+  users.value = (data || []) as LeaderboardUser[]
 }
 
 function displayName(user: LeaderboardUser) {
