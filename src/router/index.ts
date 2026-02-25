@@ -12,7 +12,14 @@ import { useLoginPrompt } from '@/composables/useLoginPrompt'
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: '/', redirect: '/browse' },
+    {
+      path: '/',
+      redirect: (to) => ({
+        path: '/browse',
+        query: to.query,
+        hash: to.hash
+      })
+    },
     { path: '/browse', name: 'browse', component: Browse },
     { path: '/voucher/:id', name: 'voucher-detail', component: VoucherDetail },
     { path: '/submit', name: 'submit', component: Submit, meta: { requiresAuth: true } },
