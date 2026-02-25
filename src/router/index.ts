@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Browse from '@/views/Browse.vue'
 import VoucherDetail from '@/views/VoucherDetail.vue'
 import Submit from '@/views/Submit.vue'
@@ -10,7 +10,7 @@ import { useAuth } from '@/composables/useAuth'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes: [
     { path: '/', redirect: '/browse' },
     { path: '/browse', name: 'browse', component: Browse },
