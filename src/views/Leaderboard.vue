@@ -53,8 +53,19 @@ onMounted(loadLeaderboard)
   <section class="mx-auto max-w-6xl space-y-4">
     <div class="space-y-1">
       <h1 class="text-3xl font-bold tracking-tight text-stone-900">Leaderboard</h1>
-      <p class="text-stone-600">Top contributors ranked by points.</p>
+      <p class="text-stone-600">Top contributors ranked by total points.</p>
     </div>
+
+    <article class="space-y-2 rounded-md border border-stone-400 bg-amber-50 px-4 py-3">
+      <h2 class="text-base font-semibold text-stone-900">How points work</h2>
+      <ul class="list-disc space-y-1 pl-5 text-sm text-stone-700">
+        <li>Submit a voucher: <strong>+10</strong> points</li>
+        <li>Use someone else's voucher: <strong>+5</strong> points</li>
+        <li>Your voucher used by someone else: <strong>+2</strong> points</li>
+        <li>Mark your own voucher as used: <strong>-10</strong> points and voucher is removed from active listings</li>
+      </ul>
+      <p class="text-xs text-stone-600">Ranking is sorted by total points in descending order.</p>
+    </article>
 
     <p v-if="loading" class="text-stone-600">Loading leaderboard...</p>
     <p v-else-if="errorMessage" class="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
