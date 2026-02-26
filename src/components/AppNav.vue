@@ -2,7 +2,6 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { useProfilePreferences } from '@/composables/useProfilePreferences'
 import { useToast } from '@/composables/useToast'
 import supabase from '@/lib/supabase'
 import type { Tables } from '@/types/supabase-generated'
@@ -11,7 +10,6 @@ const auth = useAuth()
 const toast = useToast()
 const router = useRouter()
 const menuOpen = ref(false)
-const { showProfilePicture } = useProfilePreferences()
 
 type ProfileSummary = Pick<Tables<'profiles'>, 'display_name' | 'avatar_url'>
 const profile = ref<ProfileSummary | null>(null)
@@ -111,7 +109,7 @@ watch(
       </nav>
 
       <div class="ml-auto flex w-full items-center gap-2 md:w-auto" v-if="auth.user.value">
-        <img v-if="avatarUrl && showProfilePicture" :src="avatarUrl" alt="User avatar" class="size-8 rounded-full object-cover" />
+        <img v-if="avatarUrl" :src="avatarUrl" alt="User avatar" class="size-8 rounded-full object-cover" />
         <span class="truncate text-sm font-medium text-stone-700">{{ displayName }}</span>
         <UButton color="neutral" variant="ghost" size="sm" @click="onSignOut" aria-label="Sign out">Sign Out</UButton>
       </div>

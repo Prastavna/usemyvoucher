@@ -127,10 +127,10 @@ onActivated(loadProfile)
           class="size-4 accent-teal-700"
           @change="setShowProfilePicture(($event.target as HTMLInputElement).checked)"
         />
-        Show profile picture
+        Show my profile picture on leaderboard
       </label>
 
-      <img v-if="profile.avatar_url && showProfilePicture" :src="profile.avatar_url" alt="Profile avatar" class="size-16 rounded-full object-cover" />
+      <img v-if="profile.avatar_url" :src="profile.avatar_url" alt="Profile avatar" class="size-16 rounded-full object-cover" />
       <p><strong>Email:</strong> {{ profile.email }}</p>
       <p><strong>Points:</strong> {{ profile.points || 0 }}</p>
       <p><strong>Joined:</strong> {{ joinedDate }}</p>
