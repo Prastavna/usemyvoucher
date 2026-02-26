@@ -338,7 +338,7 @@
 - [ ] Verify performance (page load times)
 
 ### Step 38: Final Checks
-- [ ] Verify Google OAuth redirect URLs are configured correctly in Supabase
+- [ ] Verify Google OAuth settings are configured correctly in Supabase
 - [ ] Test application with multiple test users
 - [ ] Monitor for any errors in browser console
 - [ ] Check Supabase logs for any errors

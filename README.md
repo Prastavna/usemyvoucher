@@ -87,7 +87,6 @@ To run this project successfully, your Supabase project should include:
 - Tables used by the app: `profiles`, `vouchers`, `voucher_uses`, `voucher_views`, `voucher_reports`
 - Server-side logic expected by the frontend: `soft_delete_voucher` and `get_public_leaderboard`
 - Google provider enabled in Supabase Auth
-- OAuth redirect URL matching the app flow (for local dev this is typically `http://localhost:5173`)
 
 ## Available scripts
 
