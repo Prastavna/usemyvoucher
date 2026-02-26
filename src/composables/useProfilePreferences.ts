@@ -1,29 +1,65 @@
-import { computed, ref } from 'vue'
-
-const STORAGE_KEY = 'usemyvoucher:show-profile-picture'
+import { computed, ref, watch } from 'vue'
+import { useAuth } from '@/composables/useAuth'
+import supabase from '@/lib/supabase'
 
 const showProfilePictureState = ref(true)
 let initialized = false
 
-function initialize() {
-  if (initialized || typeof window === 'undefined') {
+async function loadShowProfilePicture(userId?: string) {
+  if (!userId) {
+    showProfilePictureState.value = true
     return
   }
 
-  const saved = window.localStorage.getItem(STORAGE_KEY)
-  if (saved === 'false') {
-    showProfilePictureState.value = false
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('show_profile_picture')
+    .eq('id', userId)
+    .single()
+
+  if (error) {
+    return
   }
 
-  initialized = true
+  showProfilePictureState.value = data.show_profile_picture
 }
 
-function setShowProfilePicture(value: boolean) {
+async function setShowProfilePicture(value: boolean) {
+  const auth = useAuth()
+  const userId = auth.user.value?.id
+  const previousValue = showProfilePictureState.value
   showProfilePictureState.value = value
 
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(STORAGE_KEY, String(value))
+  if (!userId) {
+    return
   }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ show_profile_picture: value })
+    .eq('id', userId)
+
+  if (error) {
+    showProfilePictureState.value = previousValue
+  }
+}
+
+function initialize() {
+  if (initialized) {
+    return
+  }
+
+  const auth = useAuth()
+
+  watch(
+    () => auth.user.value?.id,
+    (userId) => {
+      void loadShowProfilePicture(userId)
+    },
+    { immediate: true }
+  )
+
+  initialized = true
 }
 
 export function useProfilePreferences() {
