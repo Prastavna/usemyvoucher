@@ -10,11 +10,43 @@ type LeaderboardUser = {
   points: number | null
 }
 
+type LeaderboardRuleItem = {
+  label: string
+  points: string[]
+}
+
 const auth = useAuth()
 
 const loading = ref(true)
 const errorMessage = ref('')
 const users = ref<LeaderboardUser[]>([])
+
+const leaderboardRuleItems: LeaderboardRuleItem[] = [
+  {
+    label: 'Point earning rules',
+    points: [
+      'Voucher submissions are limited to 10 per day per account.',
+      'Voucher uses are limited to 10 per day per account.',
+      'Submission points are granted only after the first valid non-self use.',
+      'Repeated interactions between the same user pair earn reduced or zero points.'
+    ]
+  },
+  {
+    label: 'Reporting safeguards',
+    points: [
+      'Reports are limited to 5 per day per account.',
+      'Reporting requires verified email, account age of 7+ days, and minimum 20 points.',
+      'Report impact is weighted by reporter trust score, not raw report count.'
+    ]
+  },
+  {
+    label: 'Leaderboard eligibility',
+    points: [
+      'Accounts newer than 24 hours are excluded from leaderboard rankings.',
+      'Accounts flagged as suspicious are excluded from leaderboard rankings.'
+    ]
+  }
+]
 
 const rankedUsers = computed(() => {
   const withPoints = users.value.filter((user) => (user.points || 0) > 0)
@@ -60,15 +92,16 @@ onActivated(loadLeaderboard)
       <p class="text-stone-600">Top contributors ranked by total points.</p>
     </div>
 
-    <article class="space-y-2 rounded-md border border-stone-400 bg-amber-50 px-4 py-3">
-      <h2 class="text-base font-semibold text-stone-900">How points work</h2>
-      <ul class="list-disc space-y-1 pl-5 text-sm text-stone-700">
-        <li>Submit a voucher: <strong>+10</strong> points</li>
-        <li>Use someone else's voucher: <strong>+5</strong> points</li>
-        <li>Your voucher used by someone else: <strong>+2</strong> points</li>
-        <li>Mark your own voucher as used: <strong>-10</strong> points and voucher is removed from active listings</li>
-      </ul>
-      <p class="text-xs text-stone-600">Ranking is sorted by total points in descending order.</p>
+    <article class="rounded-md border border-stone-400 bg-amber-50 px-4 py-3">
+      <h2 class="mb-2 text-base font-semibold text-stone-900">Leaderboard rules</h2>
+      <UAccordion :items="leaderboardRuleItems" type="multiple" class="w-full">
+        <template #body="{ item }">
+          <ul class="list-disc space-y-1 pl-5 text-sm text-stone-700">
+            <li v-for="point in item.points" :key="point">{{ point }}</li>
+          </ul>
+        </template>
+      </UAccordion>
+      <p class="mt-2 text-xs text-stone-600">Ranking is sorted by total points in descending order after eligibility filters.</p>
     </article>
 
     <p v-if="loading" class="text-stone-600">Loading leaderboard...</p>
