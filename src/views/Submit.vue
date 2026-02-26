@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { recognize } from 'tesseract.js'
 import { useAuth } from '@/composables/useAuth'
@@ -7,6 +7,8 @@ import { DEFAULT_VOUCHER_CATEGORIES } from '@/constants/categories'
 import { useLoginPrompt } from '@/composables/useLoginPrompt'
 import { useToast } from '@/composables/useToast'
 import supabase from '@/lib/supabase'
+import { copyToClipboard } from '@/utils/copy'
+import { extractVoucherFields, getExtractedTextLines, type ExtractedVoucherFields } from '@/utils/voucherExtraction'
 
 const router = useRouter()
 const auth = useAuth()
@@ -18,6 +20,8 @@ const extracting = ref(false)
 const extractionProgress = ref(0)
 const extractedText = ref('')
 const selectedImageName = ref('')
+const copiedLineIndex = ref<number | null>(null)
+const copiedLineResetTimer = ref<number | null>(null)
 
 const controlClass =
   'w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200'
@@ -32,201 +36,25 @@ const form = reactive({
   max_uses: 1
 })
 
-type ExtractedVoucherFields = Partial<typeof form>
+const extractedLines = computed(() => getExtractedTextLines(extractedText.value))
 
-function toIsoDate(year: number, month: number, day: number) {
-  if (month < 1 || month > 12 || day < 1 || day > 31) {
-    return ''
+async function copyExtractedLine(line: string, index: number) {
+  const copied = await copyToClipboard(line)
+  if (!copied) {
+    toast.error('Failed to copy line to clipboard.')
+    return
   }
 
-  const candidate = new Date(year, month - 1, day)
-  if (
-    Number.isNaN(candidate.getTime()) ||
-    candidate.getFullYear() !== year ||
-    candidate.getMonth() !== month - 1 ||
-    candidate.getDate() !== day
-  ) {
-    return ''
+  copiedLineIndex.value = index
+  toast.success('Line copied to clipboard.')
+
+  if (copiedLineResetTimer.value !== null) {
+    window.clearTimeout(copiedLineResetTimer.value)
   }
 
-  return `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
-}
-
-function normalizeYear(rawYear: string) {
-  const parsedYear = Number(rawYear)
-  if (rawYear.length === 2) {
-    return parsedYear < 50 ? 2000 + parsedYear : 1900 + parsedYear
-  }
-
-  return parsedYear
-}
-
-function parseDateCandidate(value: string) {
-  const trimmed = value.trim()
-  if (!trimmed) {
-    return ''
-  }
-
-  const isoMatch = trimmed.match(/(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})/)
-  if (isoMatch) {
-    return toIsoDate(Number(isoMatch[1]), Number(isoMatch[2]), Number(isoMatch[3]))
-  }
-
-  const numericMatch = trimmed.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/)
-  if (numericMatch) {
-    const first = Number(numericMatch[1])
-    const second = Number(numericMatch[2])
-    const year = normalizeYear(numericMatch[3] ?? '')
-    const month = first > 12 ? second : first
-    const day = first > 12 ? first : second
-
-    return toIsoDate(year, month, day)
-  }
-
-  const monthMap: Record<string, number> = {
-    jan: 1,
-    feb: 2,
-    mar: 3,
-    apr: 4,
-    may: 5,
-    jun: 6,
-    jul: 7,
-    aug: 8,
-    sep: 9,
-    oct: 10,
-    nov: 11,
-    dec: 12
-  }
-
-  const dayMonthYearMatch = trimmed.match(/(\d{1,2})\s+([A-Za-z]{3,9})\s*,?\s*(\d{2,4})/)
-  if (dayMonthYearMatch) {
-    const monthToken = dayMonthYearMatch[2] ?? ''
-    const yearToken = dayMonthYearMatch[3] ?? ''
-    const dayToken = dayMonthYearMatch[1] ?? ''
-    const month = monthMap[monthToken.slice(0, 3).toLowerCase()]
-    if (month) {
-      return toIsoDate(normalizeYear(yearToken), month, Number(dayToken))
-    }
-  }
-
-  const monthDayYearMatch = trimmed.match(/([A-Za-z]{3,9})\s+(\d{1,2}),?\s*(\d{2,4})/)
-  if (monthDayYearMatch) {
-    const monthToken = monthDayYearMatch[1] ?? ''
-    const dayToken = monthDayYearMatch[2] ?? ''
-    const yearToken = monthDayYearMatch[3] ?? ''
-    const month = monthMap[monthToken.slice(0, 3).toLowerCase()]
-    if (month) {
-      return toIsoDate(normalizeYear(yearToken), month, Number(dayToken))
-    }
-  }
-
-  return ''
-}
-
-function extractDate(text: string) {
-  const expiryLineMatch = text.match(/(?:expiry|expires?|valid\s*until)\s*[:\-]?\s*([^\n]+)/i)
-  if (expiryLineMatch?.[1]) {
-    const parsedFromLine = parseDateCandidate(expiryLineMatch[1])
-    if (parsedFromLine) {
-      return parsedFromLine
-    }
-  }
-
-  return parseDateCandidate(text)
-}
-
-function findFirstMatch(text: string, patterns: RegExp[]) {
-  for (const pattern of patterns) {
-    const match = text.match(pattern)
-    if (match?.[1]) {
-      return match[1].trim()
-    }
-  }
-
-  return ''
-}
-
-function pickCategory(text: string) {
-  const normalizedText = text.toLowerCase()
-
-  for (const category of DEFAULT_VOUCHER_CATEGORIES) {
-    const keywords = category
-      .toLowerCase()
-      .split(/[^a-z0-9]+/)
-      .filter((value) => value.length > 3 && value !== 'others')
-
-    if (keywords.some((keyword) => normalizedText.includes(keyword))) {
-      return category
-    }
-  }
-
-  return ''
-}
-
-function extractVoucherFields(rawText: string): ExtractedVoucherFields {
-  const sanitizedText = rawText.replace(/\r/g, '')
-  const lines = sanitizedText
-    .split('\n')
-    .map((line) => line.replace(/\s+/g, ' ').trim())
-    .filter(Boolean)
-
-  const merchantFromLabel = findFirstMatch(sanitizedText, [
-    /(?:merchant|store|shop|vendor|brand)\s*[:\-]\s*(.+)/i,
-    /(?:from)\s*[:\-]\s*(.+)/i
-  ])
-
-  const merchantFallback = lines.find(
-    (line) =>
-      line.length >= 3 &&
-      line.length <= 60 &&
-      !/(voucher|coupon|promo|discount|expiry|expires|valid|code|offer|receipt)/i.test(line)
-  )
-
-  const codeFromLabel = findFirstMatch(sanitizedText, [
-    /(?:voucher|coupon|promo|discount)\s*code\s*[:#\-]?\s*([A-Za-z0-9][A-Za-z0-9\-_]{3,})/i,
-    /\bcode\s*[:#\-]?\s*([A-Za-z0-9][A-Za-z0-9\-_]{3,})/i
-  ])
-
-  const codeFallbackMatches = sanitizedText.match(/\b[A-Z0-9][A-Z0-9\-_]{5,20}\b/g) ?? []
-  const codeFallback = codeFallbackMatches.find((candidate) => {
-    if (/^\d+$/.test(candidate)) {
-      return false
-    }
-
-    if (/\d{4}[\-\/.]\d{1,2}[\-\/.]\d{1,2}/.test(candidate)) {
-      return false
-    }
-
-    return true
-  })
-
-  const discountFromLabel = findFirstMatch(sanitizedText, [
-    /(?:discount|offer|deal|save(?:\s*up\s*to)?)\s*[:\-]\s*(.+)/i
-  ])
-
-  const discountFallback =
-    sanitizedText.match(/\b\d{1,3}\s?%\s*(?:off|discount)?\b/i)?.[0] ??
-    sanitizedText.match(/(?:\$|₹|€|£)\s?\d+(?:\.\d{1,2})?\s*(?:off|discount)?\b/i)?.[0] ??
-    ''
-
-  const maxUsesMatch = sanitizedText.match(/(?:max(?:imum)?\s*uses?|uses?)\s*[:\-]?\s*(\d{1,3})/i)
-  const maxUses = maxUsesMatch ? Number(maxUsesMatch[1]) : null
-
-  const description = findFirstMatch(sanitizedText, [
-    /(?:description|details|terms?)\s*[:\-]\s*(.+)/i
-  ])
-
-  const extracted: ExtractedVoucherFields = {
-    merchant_name: merchantFromLabel || merchantFallback || '',
-    voucher_code: (codeFromLabel || codeFallback || '').toUpperCase(),
-    discount_value: discountFromLabel || discountFallback,
-    expiry_date: extractDate(sanitizedText),
-    category: pickCategory(sanitizedText),
-    description,
-    max_uses: maxUses && maxUses > 0 ? maxUses : undefined
-  }
-
-  return extracted
+  copiedLineResetTimer.value = window.setTimeout(() => {
+    copiedLineIndex.value = null
+  }, 1500)
 }
 
 function applyExtractedFields(extracted: ExtractedVoucherFields) {
@@ -271,6 +99,7 @@ async function extractFromImage(event: Event) {
   extractionProgress.value = 0
   selectedImageName.value = file.name
   extractedText.value = ''
+  copiedLineIndex.value = null
 
   try {
     const result = await recognize(file, 'eng', {
@@ -413,7 +242,23 @@ async function submitVoucher() {
 
       <details v-if="extractedText" class="rounded-md bg-stone-100 p-3">
         <summary class="cursor-pointer text-sm font-medium text-stone-700">View extracted text</summary>
-        <pre class="mt-2 max-h-32 overflow-auto whitespace-pre-wrap text-xs text-stone-700">{{ extractedText }}</pre>
+        <div class="mt-2 max-h-48 space-y-1 overflow-auto">
+          <div
+            v-for="(line, index) in extractedLines"
+            :key="`${index}-${line}`"
+            class="grid grid-cols-[auto_1fr] items-start gap-2 rounded-sm px-1 py-1"
+          >
+            <button
+              type="button"
+              class="rounded border border-stone-300 bg-white px-2 py-0.5 text-[11px] font-medium text-stone-700 transition hover:bg-stone-50"
+              :aria-label="`Copy line ${index + 1}`"
+              @click="copyExtractedLine(line, index)"
+            >
+              {{ copiedLineIndex === index ? 'Copied' : 'Copy' }}
+            </button>
+            <span class="break-words text-xs text-stone-700">{{ line }}</span>
+          </div>
+        </div>
       </details>
     </section>
 
