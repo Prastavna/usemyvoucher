@@ -22,6 +22,8 @@ const vouchers = ref<BrowseVoucher[]>([])
 const search = ref('')
 const category = ref('all')
 const sortBy = ref<'newest' | 'most_used' | 'expiring_soon'>('newest')
+const currentPage = ref(1)
+const pageSize = 25
 
 const controlClass =
   'w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200'
@@ -71,6 +73,27 @@ const filteredVouchers = computed(() => {
   })
 })
 
+const totalPages = computed(() => {
+  return Math.max(1, Math.ceil(filteredVouchers.value.length / pageSize))
+})
+
+const paginatedVouchers = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredVouchers.value.slice(start, start + pageSize)
+})
+
+const pageStartIndex = computed(() => {
+  if (!filteredVouchers.value.length) {
+    return 0
+  }
+
+  return (currentPage.value - 1) * pageSize + 1
+})
+
+const pageEndIndex = computed(() => {
+  return Math.min(currentPage.value * pageSize, filteredVouchers.value.length)
+})
+
 async function loadVouchers() {
   loading.value = true
   errorMessage.value = ''
@@ -115,6 +138,18 @@ function openVoucher(id: string) {
   router.push(`/voucher/${id}`)
 }
 
+function goToPreviousPage() {
+  if (currentPage.value > 1) {
+    currentPage.value -= 1
+  }
+}
+
+function goToNextPage() {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value += 1
+  }
+}
+
 onMounted(loadVouchers)
 onActivated(loadVouchers)
 
@@ -124,6 +159,16 @@ watch(
     loadVouchers()
   }
 )
+
+watch([search, category, sortBy], () => {
+  currentPage.value = 1
+})
+
+watch(filteredVouchers, () => {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value
+  }
+})
 </script>
 
 <template>
@@ -155,8 +200,39 @@ watch(
       <div v-for="item in 6" :key="item" class="h-36 animate-pulse rounded-md border border-stone-300 bg-stone-100" />
     </div>
 
-    <div v-else-if="filteredVouchers.length" class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">
-      <VoucherCard v-for="voucher in filteredVouchers" :key="voucher.id" :voucher="voucher" @open="openVoucher" />
+    <div v-else-if="filteredVouchers.length" class="space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-stone-600">
+        <p>
+          Showing {{ pageStartIndex }}-{{ pageEndIndex }} of {{ filteredVouchers.length }} vouchers
+        </p>
+        <div class="flex items-center gap-2">
+          <UButton
+            type="button"
+            color="neutral"
+            variant="soft"
+            size="sm"
+            :disabled="currentPage === 1"
+            @click="goToPreviousPage"
+          >
+            Previous
+          </UButton>
+          <span class="text-sm font-medium text-stone-700">Page {{ currentPage }} of {{ totalPages }}</span>
+          <UButton
+            type="button"
+            color="neutral"
+            variant="soft"
+            size="sm"
+            :disabled="currentPage === totalPages"
+            @click="goToNextPage"
+          >
+            Next
+          </UButton>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">
+        <VoucherCard v-for="voucher in paginatedVouchers" :key="voucher.id" :voucher="voucher" @open="openVoucher" />
+      </div>
     </div>
 
     <div v-else class="rounded-md border border-stone-400 bg-amber-50 px-6 py-10 text-center">

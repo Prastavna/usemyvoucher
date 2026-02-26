@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onMounted, ref } from 'vue'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
@@ -15,6 +15,8 @@ type MyVoucher = Pick<Tables<'vouchers'>, 'id' | 'merchant_name' | 'deleted_at' 
 const loading = ref(true)
 const errorMessage = ref('')
 const vouchers = ref<MyVoucher[]>([])
+const currentPage = ref(1)
+const pageSize = 25
 
 const withStatus = computed(() => {
   return vouchers.value.map((voucher) => {
@@ -27,6 +29,27 @@ const withStatus = computed(() => {
 
     return { voucher, status }
   })
+})
+
+const totalPages = computed(() => {
+  return Math.max(1, Math.ceil(withStatus.value.length / pageSize))
+})
+
+const paginatedWithStatus = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return withStatus.value.slice(start, start + pageSize)
+})
+
+const pageStartIndex = computed(() => {
+  if (!withStatus.value.length) {
+    return 0
+  }
+
+  return (currentPage.value - 1) * pageSize + 1
+})
+
+const pageEndIndex = computed(() => {
+  return Math.min(currentPage.value * pageSize, withStatus.value.length)
 })
 
 async function loadMyVouchers() {
@@ -82,8 +105,26 @@ function openVoucher(id: string) {
   router.push(`/voucher/${id}`)
 }
 
+function goToPreviousPage() {
+  if (currentPage.value > 1) {
+    currentPage.value -= 1
+  }
+}
+
+function goToNextPage() {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value += 1
+  }
+}
+
 onMounted(loadMyVouchers)
 onActivated(loadMyVouchers)
+
+watch(withStatus, () => {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value
+  }
+})
 </script>
 
 <template>
@@ -98,25 +139,56 @@ onActivated(loadMyVouchers)
       Failed to load vouchers: {{ errorMessage }}
     </p>
 
-    <div v-else-if="withStatus.length" class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">
-      <article v-for="item in withStatus" :key="item.voucher.id" class="space-y-2 rounded-md border border-stone-500 bg-white p-4 shadow-sm">
-        <h3 class="text-lg font-semibold text-stone-900">{{ item.voucher.merchant_name }}</h3>
-        <p class="text-sm text-stone-600">Status: <strong>{{ item.status }}</strong></p>
-        <p class="text-sm text-stone-600">Uses: {{ item.voucher.use_count || 0 }} / {{ item.voucher.max_uses || 1 }}</p>
-        <p class="text-sm text-stone-600">Reports: {{ item.voucher.report_count || 0 }}</p>
-        <div class="flex flex-wrap gap-2">
-          <UButton type="button" color="neutral" variant="soft" @click="openVoucher(item.voucher.id)">View</UButton>
+    <div v-else-if="withStatus.length" class="space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-stone-600">
+        <p>
+          Showing {{ pageStartIndex }}-{{ pageEndIndex }} of {{ withStatus.length }} vouchers
+        </p>
+        <div class="flex items-center gap-2">
           <UButton
             type="button"
-            color="error"
+            color="neutral"
             variant="soft"
-            @click="softDelete(item.voucher.id)"
-            :disabled="Boolean(item.voucher.deleted_at)"
+            size="sm"
+            :disabled="currentPage === 1"
+            @click="goToPreviousPage"
           >
-            {{ item.voucher.deleted_at ? 'Deleted' : 'Delete' }}
+            Previous
+          </UButton>
+          <span class="text-sm font-medium text-stone-700">Page {{ currentPage }} of {{ totalPages }}</span>
+          <UButton
+            type="button"
+            color="neutral"
+            variant="soft"
+            size="sm"
+            :disabled="currentPage === totalPages"
+            @click="goToNextPage"
+          >
+            Next
           </UButton>
         </div>
-      </article>
+      </div>
+
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">
+        <article v-for="item in paginatedWithStatus" :key="item.voucher.id" class="space-y-2 rounded-md border border-stone-500 bg-white p-4 shadow-sm">
+          <h3 class="text-lg font-semibold text-stone-900">{{ item.voucher.merchant_name }}</h3>
+          <p class="text-sm text-stone-600">Status: <strong>{{ item.status }}</strong></p>
+          <p class="text-sm text-stone-600">Uses: {{ item.voucher.use_count || 0 }} / {{ item.voucher.max_uses || 1 }}</p>
+          <p class="text-sm text-stone-600">Reports: {{ item.voucher.report_count || 0 }}</p>
+          <div class="flex flex-wrap gap-2">
+            <UButton type="button" color="neutral" variant="soft" @click="openVoucher(item.voucher.id)">View</UButton>
+            <UButton
+              type="button"
+              color="error"
+              variant="soft"
+              @click="softDelete(item.voucher.id)"
+              :disabled="Boolean(item.voucher.deleted_at)"
+            >
+              {{ item.voucher.deleted_at ? 'Deleted' : 'Delete' }}
+            </UButton>
+          </div>
+        </article>
+      </div>
     </div>
 
     <div v-else class="rounded-md border border-stone-400 bg-amber-50 px-6 py-10 text-center">
