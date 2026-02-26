@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onActivated, onMounted, ref } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import supabase from '@/lib/supabase'
 
@@ -47,6 +47,7 @@ function isCurrentUser(id: string) {
 }
 
 onMounted(loadLeaderboard)
+onActivated(loadLeaderboard)
 </script>
 
 <template>

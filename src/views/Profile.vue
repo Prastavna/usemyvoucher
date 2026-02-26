@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onActivated, onMounted, ref } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 import supabase from '@/lib/supabase'
@@ -94,6 +94,7 @@ async function saveDisplayName() {
 }
 
 onMounted(loadProfile)
+onActivated(loadProfile)
 </script>
 
 <template>

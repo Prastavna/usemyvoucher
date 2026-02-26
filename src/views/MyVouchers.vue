@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onActivated, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
@@ -81,6 +81,7 @@ function openVoucher(id: string) {
 }
 
 onMounted(loadMyVouchers)
+onActivated(loadMyVouchers)
 </script>
 
 <template>

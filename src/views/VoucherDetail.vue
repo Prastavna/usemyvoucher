@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ReportModal from '@/components/ReportModal.vue'
 import { useAuth } from '@/composables/useAuth'
@@ -35,6 +35,8 @@ const disableUseButton = computed(() => hasUsed.value || usageLimitReached.value
 async function loadVoucher() {
   loading.value = true
   errorMessage.value = ''
+  reveal.value = false
+  hasUsed.value = false
 
   const { data, error } = await supabase
     .from('vouchers')
@@ -136,6 +138,8 @@ function openReportModal() {
 }
 
 onMounted(loadVoucher)
+onActivated(loadVoucher)
+watch(voucherId, loadVoucher)
 </script>
 
 <template>

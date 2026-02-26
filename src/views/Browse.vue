@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import VoucherCard from '@/components/VoucherCard.vue'
@@ -111,6 +111,7 @@ function openVoucher(id: string) {
 }
 
 onMounted(loadVouchers)
+onActivated(loadVouchers)
 
 watch(
   () => auth.user.value?.id,
