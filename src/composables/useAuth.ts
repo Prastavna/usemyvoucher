@@ -58,28 +58,35 @@ async function initializeAuth() {
     return
   }
 
-  const { data, error } = await supabase.auth.getSession()
-  if (!error) {
-    state.session = data.session
-    state.user = data.session?.user ?? null
-    if (state.user) {
-      await ensureProfile(state.user)
-    }
-  }
-
-  if (!authListenerBound) {
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-      state.session = session
-      state.user = session?.user ?? null
+  try {
+    const { data, error } = await supabase.auth.getSession()
+    if (!error) {
+      state.session = data.session
+      state.user = data.session?.user ?? null
       if (state.user) {
-        await ensureProfile(state.user)
+        void ensureProfile(state.user).catch((profileError) => {
+          console.error('Failed to sync user profile during auth init', profileError)
+        })
       }
-    })
-    authListenerBound = true
-  }
+    }
 
-  state.initialized = true
-  state.loading = false
+    if (!authListenerBound) {
+      supabase.auth.onAuthStateChange((_event, session) => {
+        state.session = session
+        state.user = session?.user ?? null
+        if (state.user) {
+          void ensureProfile(state.user).catch((profileError) => {
+            console.error('Failed to sync user profile after auth change', profileError)
+          })
+        }
+      })
+      authListenerBound = true
+    }
+
+    state.initialized = true
+  } finally {
+    state.loading = false
+  }
 }
 
 async function signInWithGoogle() {
