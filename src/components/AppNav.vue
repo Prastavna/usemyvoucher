@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { useProfilePreferences } from '@/composables/useProfilePreferences'
 import { useToast } from '@/composables/useToast'
+import supabase from '@/lib/supabase'
+import type { Tables } from '@/types/supabase-generated'
 
 const auth = useAuth()
 const toast = useToast()
 const router = useRouter()
 const menuOpen = ref(false)
+const { showProfilePicture } = useProfilePreferences()
+
+type ProfileSummary = Pick<Tables<'profiles'>, 'display_name' | 'avatar_url'>
+const profile = ref<ProfileSummary | null>(null)
 
 const displayName = computed(() => {
   const user = auth.user.value
@@ -15,10 +22,10 @@ const displayName = computed(() => {
     return ''
   }
 
-  return user.user_metadata.full_name ?? user.email ?? 'User'
+  return profile.value?.display_name?.trim() || user.user_metadata.full_name || user.email || 'User'
 })
 
-const avatarUrl = computed(() => auth.user.value?.user_metadata.avatar_url as string | undefined)
+const avatarUrl = computed(() => profile.value?.avatar_url || (auth.user.value?.user_metadata.avatar_url as string | undefined))
 
 const navLinkClass =
   'rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-teal-500 hover:text-teal-700'
@@ -41,6 +48,33 @@ async function onSignIn() {
     toast.error(error instanceof Error ? error.message : 'Could not start Google sign-in')
   }
 }
+
+async function loadProfileSummary() {
+  if (!auth.user.value) {
+    profile.value = null
+    return
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('display_name, avatar_url')
+    .eq('id', auth.user.value.id)
+    .single()
+
+  if (error) {
+    return
+  }
+
+  profile.value = data
+}
+
+watch(
+  () => auth.user.value?.id,
+  () => {
+    loadProfileSummary()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -77,7 +111,7 @@ async function onSignIn() {
       </nav>
 
       <div class="ml-auto flex w-full items-center gap-2 md:w-auto" v-if="auth.user.value">
-        <img v-if="avatarUrl" :src="avatarUrl" alt="User avatar" class="size-8 rounded-full object-cover" />
+        <img v-if="avatarUrl && showProfilePicture" :src="avatarUrl" alt="User avatar" class="size-8 rounded-full object-cover" />
         <span class="truncate text-sm font-medium text-stone-700">{{ displayName }}</span>
         <UButton color="neutral" variant="ghost" size="sm" @click="onSignOut" aria-label="Sign out">Sign Out</UButton>
       </div>

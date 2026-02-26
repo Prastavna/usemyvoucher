@@ -8,6 +8,7 @@ import { useLoginPrompt } from '@/composables/useLoginPrompt'
 import { useToast } from '@/composables/useToast'
 import supabase from '@/lib/supabase'
 import { copyToClipboard } from '@/utils/copy'
+import { containsProfanity } from '@/utils/profanity'
 import { extractVoucherFields, getExtractedTextLines, type ExtractedVoucherFields } from '@/utils/voucherExtraction'
 
 const router = useRouter()
@@ -145,12 +146,23 @@ async function extractFromImage(event: Event) {
 }
 
 function validateForm() {
-  if (!form.merchant_name.trim()) {
+  const merchantName = form.merchant_name.trim()
+  const description = form.description.trim()
+
+  if (!merchantName) {
     return 'Merchant name is required'
+  }
+
+  if (containsProfanity(merchantName)) {
+    return 'Merchant name cannot contain profanity'
   }
 
   if (!form.voucher_code.trim()) {
     return 'Voucher code is required'
+  }
+
+  if (description && containsProfanity(description)) {
+    return 'Description cannot contain profanity'
   }
 
   if (form.max_uses < 1) {

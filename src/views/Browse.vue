@@ -10,9 +10,14 @@ import type { Tables } from '@/types/supabase-generated'
 const router = useRouter()
 const auth = useAuth()
 
+type BrowseVoucher = Pick<
+  Tables<'vouchers'>,
+  'id' | 'merchant_name' | 'description' | 'discount_value' | 'category' | 'expiry_date' | 'use_count' | 'max_uses' | 'created_at'
+>
+
 const loading = ref(true)
 const errorMessage = ref('')
-const vouchers = ref<Tables<'vouchers'>[]>([])
+const vouchers = ref<BrowseVoucher[]>([])
 
 const search = ref('')
 const category = ref('all')
@@ -72,7 +77,7 @@ async function loadVouchers() {
 
   const { data, error } = await supabase
     .from('vouchers')
-    .select('*')
+    .select('id, merchant_name, description, discount_value, category, expiry_date, use_count, max_uses, created_at')
     .eq('is_active', true)
     .is('deleted_at', null)
 

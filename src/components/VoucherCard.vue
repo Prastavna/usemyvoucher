@@ -2,8 +2,13 @@
 import { computed, ref } from 'vue'
 import type { Tables } from '@/types/supabase-generated'
 
+type VoucherPreview = Pick<
+  Tables<'vouchers'>,
+  'id' | 'merchant_name' | 'description' | 'discount_value' | 'category' | 'expiry_date' | 'use_count' | 'max_uses'
+>
+
 const props = defineProps<{
-  voucher: Tables<'vouchers'>
+  voucher: VoucherPreview
 }>()
 
 const emit = defineEmits<{

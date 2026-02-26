@@ -16,7 +16,10 @@ const loading = ref(true)
 const errorMessage = ref('')
 const users = ref<LeaderboardUser[]>([])
 
-const rankedUsers = computed(() => users.value.map((user, index) => ({ rank: index + 1, user })))
+const rankedUsers = computed(() => {
+  const withPoints = users.value.filter((user) => (user.points || 0) > 0)
+  return withPoints.map((user, index) => ({ rank: index + 1, user }))
+})
 
 async function loadLeaderboard() {
   loading.value = true

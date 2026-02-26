@@ -13,10 +13,23 @@ const auth = useAuth()
 const prompt = useLoginPrompt()
 const toast = useToast()
 
+type VoucherDetail = Pick<
+  Tables<'vouchers'>,
+  | 'id'
+  | 'merchant_name'
+  | 'description'
+  | 'discount_value'
+  | 'category'
+  | 'expiry_date'
+  | 'use_count'
+  | 'max_uses'
+>
+
 const loading = ref(true)
 const errorMessage = ref('')
-const voucher = ref<Tables<'vouchers'> | null>(null)
+const voucher = ref<VoucherDetail | null>(null)
 const reveal = ref(false)
+const revealedCode = ref('')
 const hasUsed = ref(false)
 const reportOpen = ref(false)
 
@@ -36,11 +49,12 @@ async function loadVoucher() {
   loading.value = true
   errorMessage.value = ''
   reveal.value = false
+  revealedCode.value = ''
   hasUsed.value = false
 
   const { data, error } = await supabase
     .from('vouchers')
-    .select('*')
+    .select('id, merchant_name, description, discount_value, category, expiry_date, use_count, max_uses')
     .eq('id', voucherId.value)
     .single()
 
@@ -76,7 +90,19 @@ async function revealCode() {
     return
   }
 
+  const { data, error } = await supabase
+    .from('vouchers')
+    .select('voucher_code')
+    .eq('id', voucher.value.id)
+    .single()
+
+  if (error) {
+    toast.error(error.message)
+    return
+  }
+
   reveal.value = true
+  revealedCode.value = data.voucher_code
 
   await supabase.from('voucher_views').insert({
     voucher_id: voucher.value.id,
@@ -85,12 +111,12 @@ async function revealCode() {
 }
 
 async function copyCode() {
-  if (!voucher.value) {
+  if (!voucher.value || !revealedCode.value) {
     return
   }
 
   try {
-    await navigator.clipboard.writeText(voucher.value.voucher_code)
+    await navigator.clipboard.writeText(revealedCode.value)
     toast.success('Voucher code copied')
   } catch {
     toast.error('Copy failed. Please copy manually.')
@@ -161,7 +187,7 @@ watch(voucherId, loadVoucher)
       </div>
 
       <div class="space-y-3 rounded-md border border-stone-500 p-4">
-        <p class="font-mono text-2xl font-bold tracking-[0.1em] text-stone-900">{{ reveal ? voucher.voucher_code : '••••••••••' }}</p>
+        <p class="font-mono text-2xl font-bold tracking-[0.1em] text-stone-900">{{ reveal ? revealedCode : '••••••••••' }}</p>
         <div class="flex flex-wrap gap-2">
           <UButton type="button" color="primary" @click="revealCode" :disabled="reveal">Reveal code</UButton>
           <UButton type="button" color="neutral" variant="soft" @click="copyCode" :disabled="!reveal">Copy code</UButton>

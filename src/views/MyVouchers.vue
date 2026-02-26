@@ -10,9 +10,11 @@ const router = useRouter()
 const auth = useAuth()
 const toast = useToast()
 
+type MyVoucher = Pick<Tables<'vouchers'>, 'id' | 'merchant_name' | 'deleted_at' | 'report_count' | 'use_count' | 'max_uses'>
+
 const loading = ref(true)
 const errorMessage = ref('')
-const vouchers = ref<Tables<'vouchers'>[]>([])
+const vouchers = ref<MyVoucher[]>([])
 
 const withStatus = computed(() => {
   return vouchers.value.map((voucher) => {
@@ -38,7 +40,7 @@ async function loadMyVouchers() {
 
   const { data, error } = await supabase
     .from('vouchers')
-    .select('*')
+    .select('id, merchant_name, deleted_at, report_count, use_count, max_uses')
     .eq('user_id', auth.user.value.id)
     .order('created_at', { ascending: false })
 

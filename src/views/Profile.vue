@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, onActivated, onMounted, ref } from 'vue'
 import { useAuth } from '@/composables/useAuth'
+import { useProfilePreferences } from '@/composables/useProfilePreferences'
 import { useToast } from '@/composables/useToast'
 import supabase from '@/lib/supabase'
 import type { Tables } from '@/types/supabase-generated'
+import { containsProfanity } from '@/utils/profanity'
 
 const auth = useAuth()
 const toast = useToast()
+const { showProfilePicture, setShowProfilePicture } = useProfilePreferences()
 
 const loading = ref(true)
 const errorMessage = ref('')
@@ -76,10 +79,17 @@ async function saveDisplayName() {
     return
   }
 
+  const nextDisplayName = displayNameDraft.value.trim()
+
+  if (nextDisplayName && containsProfanity(nextDisplayName)) {
+    toast.error('Please use a clean display name without profanity')
+    return
+  }
+
   savingName.value = true
   const { error } = await supabase
     .from('profiles')
-    .update({ display_name: displayNameDraft.value.trim() || null })
+    .update({ display_name: nextDisplayName || null })
     .eq('id', auth.user.value.id)
 
   savingName.value = false
@@ -110,7 +120,17 @@ onActivated(loadProfile)
     </p>
 
     <article v-else-if="profile" class="space-y-3 rounded-md border border-stone-500 bg-white p-4 shadow-sm">
-      <img v-if="profile.avatar_url" :src="profile.avatar_url" alt="Profile avatar" class="size-16 rounded-full object-cover" />
+      <label class="inline-flex w-fit items-center gap-2 rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700">
+        <input
+          :checked="showProfilePicture"
+          type="checkbox"
+          class="size-4 accent-teal-700"
+          @change="setShowProfilePicture(($event.target as HTMLInputElement).checked)"
+        />
+        Show profile picture
+      </label>
+
+      <img v-if="profile.avatar_url && showProfilePicture" :src="profile.avatar_url" alt="Profile avatar" class="size-16 rounded-full object-cover" />
       <p><strong>Email:</strong> {{ profile.email }}</p>
       <p><strong>Points:</strong> {{ profile.points || 0 }}</p>
       <p><strong>Joined:</strong> {{ joinedDate }}</p>
